@@ -34,9 +34,10 @@ class LaravelSettingsServiceProvider extends ServiceProvider
 
         $config = config('laravel-settings');
 
-        $this->app->bind(DefaultRepository::class, $config['defaults']['provider']);
-
         foreach($config as $entity => $entityConfig) {
+            if(!$this->app->bound(DefaultRepository::class)){
+                $this->app->bind(DefaultRepository::class, $entityConfig['defaults']['provider']);
+            }
             $this->app->bind('laravel-settings-'.$entity, function (Container $app) use ($entityConfig, $entity) {
                 return new LaravelSettings(
                     $app->makeWith(DefaultRepository::class, ['entityName' => $entity]),

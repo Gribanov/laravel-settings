@@ -41,3 +41,23 @@ if (! function_exists('teamSettings')) {
                        ->forEntity($teamId);
     }
 }
+if (! function_exists('settings')) {
+    /**
+     * @param  null  $baseKey
+     * @param  null  $teamId
+     * @return LaravelSettings
+     */
+
+    function settings($baseKey = null, $teamId = null)
+    {
+        $setting = app('laravel-settings-user');
+
+        if (is_null($baseKey)) {
+            return $setting;
+        }
+
+        /** @var LaravelSettings $setting */
+        return $setting->baseKey($baseKey)
+                       ->forEntity($teamId);
+    }
+}

@@ -24,7 +24,7 @@ class FileDefaultRepositoryTest extends TestCase
      */
     public function returns_defaults_when_given_key()
     {
-        $defaults = (new FileDefaultRepository)->get('test');
+        $defaults = (new FileDefaultRepository('user'))->get('test');
 
         $this->assertInstanceOf(Collection::class, $defaults);
         $this->assertEquals($defaults->all(), [
