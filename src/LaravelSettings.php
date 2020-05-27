@@ -17,13 +17,22 @@ class LaravelSettings
 
     private $baseKey;
 
-    private $userId;
+    private $entityId;
 
     /**
      * @var Model
      */
     private $model;
 
+    /**
+     * @var string
+     */
+    private $entityFieldName;
+
+    /**
+     * @var string
+     */
+    private $settingFieldName;
     /**
      * @var SettingsConfig
      */
@@ -40,6 +49,9 @@ class LaravelSettings
         $this->defaultRepository = $defaultRepository;
         $this->settingsConfig = $settingsConfig;
         $this->model = $this->settingsConfig->model;
+        $this->entityFieldName = $this->settingsConfig->entityFieldName;
+        $this->settingFieldName = $this->settingsConfig->settingFieldName;
+
     }
 
     public static function setting($value, $label = null, $validator = null)
@@ -56,7 +68,14 @@ class LaravelSettings
 
     public function forUser($userId)
     {
-        $this->userId = $userId;
+        $this->entityId = $userId;
+
+        return $this;
+    }
+
+    public function forEntity($entityId)
+    {
+        $this->entityId = $entityId;
 
         return $this;
     }
@@ -108,7 +127,7 @@ class LaravelSettings
             $this->storeSettings($allStoredSettings);
         }
 
-        SettingUpdated::dispatch($newSettings, $settings, $allStoredSettings, $this->userId);
+        SettingUpdated::dispatch($newSettings, $settings, $allStoredSettings, $this->entityId);
     }
 
     public function get($key = null): Collection
@@ -116,7 +135,7 @@ class LaravelSettings
         /** @var Collection $settings */
         $settings = $this->defaultRepository->get($this->makeKey($key));
 
-        if (!is_null($this->userId) && $this->entityHasStoredSettingsForBaseKey()) {
+        if (!is_null($this->entityId) && $this->entityHasStoredSettingsForBaseKey()) {
 
             // get ALL stored settings for user
             $storedSettings = $this->getStoredSettings()->settings[$this->baseKey];
@@ -140,8 +159,8 @@ class LaravelSettings
      */
     private function entityHasStoredSettingsForBaseKey(): bool
     {
-        return $this->model::where('user_id', $this->userId)
-                           ->where('settings', 'LIKE', "%{$this->baseKey}%")
+        return $this->model::where($this->entityFieldName, $this->entityId)
+                           ->where($this->settingFieldName, 'LIKE', "%{$this->baseKey}%")
                            ->count() > 0;
     }
 
@@ -150,7 +169,7 @@ class LaravelSettings
      */
     private function getStoredSettings()
     {
-        return $this->model::where('user_id', $this->userId)->first();
+        return $this->model::where($this->entityFieldName, $this->entityId)->first();
     }
 
     public function arrayRecursiveReplace($settings, $fromStorage): Collection
@@ -200,14 +219,14 @@ class LaravelSettings
 
     private function deleteSettingsForUser()
     {
-        return $this->model::where('user_id', $this->userId)->delete();
+        return $this->model::where($this->entityFieldName, $this->entityId)->delete();
     }
 
     private function storeSettings($settings)
     {
-        return $this->model::updateOrCreate(['user_id' => $this->userId], [
-            'user_id'  => $this->userId,
-            'settings' => $settings,
+        return $this->model::updateOrCreate([$this->entityFieldName => $this->entityId], [
+            $this->entityFieldName  => $this->entityId,
+            $this->settingFieldName => $settings,
         ]);
     }
 }

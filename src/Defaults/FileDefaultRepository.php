@@ -10,6 +10,17 @@ use Leeovery\LaravelSettings\Exceptions\InvalidSettingsKey;
 
 class FileDefaultRepository implements DefaultRepository
 {
+    private $entityName;
+
+    /**
+     * FileDefaultRepository constructor.
+     * @param $entityName
+     */
+    public function __construct($entityName)
+    {
+        $this->entityName = $entityName;
+    }
+
     public function get(string $key): Collection
     {
         $defaults = collect(
@@ -40,6 +51,6 @@ class FileDefaultRepository implements DefaultRepository
 
     private function makeKey($key)
     {
-        return config('laravel-settings.config-pre-key').'-'.$key;
+        return config('laravel-settings.'.$this->entityName.'.config-pre-key').'-'.$key;
     }
 }
