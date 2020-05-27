@@ -36,6 +36,9 @@ class FileDefaultRepository implements DefaultRepository
 
     private function ensureSubSetsAreProperlyKeyed(string $key, $defaults)
     {
+        if(is_null($defaults)){
+            return [];
+        }
         // ensure results are fully keyed when only fetching a subset of data...
         if (Str::contains($key, '.')) {
             $key = Str::after($key, '.');
