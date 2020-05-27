@@ -108,7 +108,8 @@ class LaravelSettings
         $forStoring = $this->arrayRecursiveDiff($settings, $defaults->all());
 
         // Get ALL stored settings for user.
-        $allStoredSettings = optional($this->getStoredSettings())->settings;
+        $allStoredSettings = optional($this->getStoredSettings())[$this->settingFieldName];
+
 
         // if we have nothing to store and stored settings is not null...
         if (empty($forStoring) && $allStoredSettings[$this->baseKey]) {
@@ -138,7 +139,7 @@ class LaravelSettings
         if (!is_null($this->entityId) && $this->entityHasStoredSettingsForBaseKey()) {
 
             // get ALL stored settings for user
-            $storedSettings = $this->getStoredSettings()->settings[$this->baseKey];
+            $storedSettings = $this->getStoredSettings()->getAttribute($this->settingFieldName)[$this->baseKey];
 
             // does stored settings have the key we are wanting?
             if (is_null($key) || Arr::has($storedSettings, $key)) {
@@ -160,8 +161,8 @@ class LaravelSettings
     private function entityHasStoredSettingsForBaseKey(): bool
     {
         return $this->model::where($this->entityFieldName, $this->entityId)
-                           ->where($this->settingFieldName, 'LIKE', "%{$this->baseKey}%")
-                           ->count() > 0;
+                ->where($this->settingFieldName, 'LIKE', "%{$this->baseKey}%")
+                ->count() > 0;
     }
 
     /**
@@ -169,7 +170,9 @@ class LaravelSettings
      */
     private function getStoredSettings()
     {
-        return $this->model::where($this->entityFieldName, $this->entityId)->first();
+        $settings = $this->model::where($this->entityFieldName, $this->entityId)->first();
+
+        return $settings;
     }
 
     public function arrayRecursiveReplace($settings, $fromStorage): Collection
