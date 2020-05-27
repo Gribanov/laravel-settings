@@ -112,7 +112,7 @@ class LaravelSettings
 
 
         // if we have nothing to store and stored settings is not null...
-        if (empty($forStoring) && $allStoredSettings[$this->baseKey]) {
+        if (empty($forStoring) && !is_null($allStoredSettings) && $allStoredSettings[$this->baseKey]) {
             unset($allStoredSettings[$this->baseKey]);
         } else {
             if (!empty($forStoring)) {
@@ -123,7 +123,7 @@ class LaravelSettings
         // if $allStoredSettings is empty then we can delete settings for user
         // else save...
         if (empty($allStoredSettings)) {
-            $this->deleteSettingsForUser();
+            $this->deleteSettingsForEntity();
         } else {
             $this->storeSettings($allStoredSettings);
         }
@@ -220,7 +220,7 @@ class LaravelSettings
         return $storeTheseSettings;
     }
 
-    private function deleteSettingsForUser()
+    private function deleteSettingsForEntity()
     {
         return $this->model::where($this->entityFieldName, $this->entityId)->delete();
     }
